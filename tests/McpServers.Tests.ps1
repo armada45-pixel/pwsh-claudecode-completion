@@ -175,6 +175,32 @@ Describe 'MCP server names' {
         }
     }
 
+    It 'quotes a name that PowerShell would otherwise run or expand: <name>' -ForEach @(
+        @{ name = '$(Get-Date)'; text = "'`$(Get-Date)'" }
+        @{ name = 'a;b'; text = "'a;b'" }
+        @{ name = 'a|b'; text = "'a|b'" }
+        @{ name = 'a&b'; text = "'a&b'" }
+        @{ name = '`whoami`'; text = "'``whoami``'" }
+        @{ name = '@splat'; text = "'@splat'" }
+        @{ name = '#comment'; text = "'#comment'" }
+        @{ name = '$env:HOME'; text = "'`$env:HOME'" }
+        @{ name = 'a>b'; text = "'a>b'" }
+        @{ name = 'a(b)'; text = "'a(b)'" }
+        @{ name = 'a{b}'; text = "'a{b}'" }
+        @{ name = 'a,b'; text = "'a,b'" }
+        @{ name = 'a"b'; text = "'a`"b'" }
+    ) {
+        Set-TextFile (Join-Path $proj '.mcp.json') (@{ mcpServers = @{ $name = @{ command = 'x' } } } | ConvertTo-Json -Depth 4)
+        Remove-Item (Join-Path $fakeHome '.claude.json')
+        Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
+            $match = Get-Completion 'claude mcp get '
+            $match.CompletionText | Should -Be $text
+            $match.ListItemText | Should -Be $name
+            # What PowerShell makes of the completed word is the name itself.
+            Invoke-Expression "Write-Output $($match.CompletionText)" | Should -Be $name
+        }
+    }
+
     It 'quotes a name PowerShell would not pass on as one word' {
         Set-TextFile (Join-Path $proj '.mcp.json') '{ "mcpServers": { "my server": { "command": "x" }, "it''s": { "command": "y" } } }'
         Remove-Item (Join-Path $fakeHome '.claude.json')

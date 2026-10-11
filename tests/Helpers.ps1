@@ -58,20 +58,22 @@ function Set-TextFile {
 function Use-ClaudeEnvironment {
     [CmdletBinding(PositionalBinding = $false)]
     param([string]$ConfigDir, [string]$HomeDir, [string]$Cwd, [hashtable]$Environment = @{}, [Parameter(Mandatory, Position = 0)][scriptblock]$Body)
-    $names = @('CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_PLUGIN_CACHE_DIR', 'CLAUDE_COMPLETION_SESSION_LIMIT', 'HOME', 'USERPROFILE') + @($Environment.Keys)
-    $saved = @{}
-    foreach ($name in $names) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
+    # The body runs in a child scope of this function, so the locals here are
+    # named not to hide a variable of the test.
+    $envNames = @('CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_PLUGIN_CACHE_DIR', 'CLAUDE_COMPLETION_SESSION_LIMIT', 'HOME', 'USERPROFILE') + @($Environment.Keys)
+    $envSaved = @{}
+    foreach ($envName in $envNames) { $envSaved[$envName] = [Environment]::GetEnvironmentVariable($envName) }
     try {
-        foreach ($name in 'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_PLUGIN_CACHE_DIR', 'CLAUDE_COMPLETION_SESSION_LIMIT') {
-            [Environment]::SetEnvironmentVariable($name, $null)
+        foreach ($envName in 'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_PLUGIN_CACHE_DIR', 'CLAUDE_COMPLETION_SESSION_LIMIT') {
+            [Environment]::SetEnvironmentVariable($envName, $null)
         }
         if ($HomeDir) { $env:HOME = $HomeDir; $env:USERPROFILE = $HomeDir }
         if ($ConfigDir) { $env:CLAUDE_CONFIG_DIR = $ConfigDir }
-        foreach ($name in $Environment.Keys) { [Environment]::SetEnvironmentVariable($name, $Environment[$name]) }
+        foreach ($envName in $Environment.Keys) { [Environment]::SetEnvironmentVariable($envName, $Environment[$envName]) }
         if ($Cwd) { Push-Location -LiteralPath $Cwd }
         try { & $Body } finally { if ($Cwd) { Pop-Location } }
     }
     finally {
-        foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name, $saved[$name]) }
+        foreach ($envName in $envNames) { [Environment]::SetEnvironmentVariable($envName, $envSaved[$envName]) }
     }
 }

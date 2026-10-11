@@ -117,7 +117,8 @@ The title is the `/rename` title, else the generated title, else the first user 
 - Values match without regard to case (`--agent exp` completes `Explore`). Flags match exactly, because `-h` and `-H` differ.
 - A value PowerShell would not pass on as one word is quoted: `'sonnet[1m]'`.
 - In a comma-separated list (`--setting-sources`, `--fallback-model`) the comma is not added for you. Type it and press Tab again for the remaining values.
-- Where there is nothing to offer for a position (a prompt, a new server name) and the word is still empty, the flags of the command are listed. With a partly typed word PowerShell falls back to file names; a completer cannot turn that off.
+- Where a position takes free text (a prompt, a new server name) and the word is still empty, the flags of the command are listed.
+- When there is no match at all, for example `--resume` in a directory without sessions, PowerShell falls back to file names. A completer cannot turn that off.
 - Sessions follow `CLAUDE_CONFIG_DIR`. The zsh plugin always reads them from `~/.claude`.
 - `--resume`, `--debug`, `--from-pr` and `--prompt-suggestions` take an optional value, as `claude --help` says. So `claude --debug mcp <Tab>` completes the `mcp` subcommands.
 - A few flags from `claude --help` 2.1.296 that `_claude` does not have: `--json` for `plugin marketplace add|remove|update`, and `--help` on the command groups.

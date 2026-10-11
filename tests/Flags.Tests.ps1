@@ -103,6 +103,13 @@ Describe 'other commands' {
         @{ line = 'claude rm --'; flags = '--discard-unpushed', '--force-remove-worktree' }
         @{ line = 'claude auth login --'; flags = '--claudeai', '--console', '--email', '--sso' }
         @{ line = 'claude plugin install --'; flags = '--marketplace', '--scope', '--yes' }
+        @{ line = 'claude self-hosted-runner --s'; flags = '--server-auto-mode-lists', '--session-stop-grace-sec', '--startup-timeout-min' }
+        # In `claude --help`, not in the zsh plugin's `_claude`.
+        @{ line = 'claude plugin marketplace add --'; flags = '--json', '--scope', '--sparse' }
+        @{ line = 'claude plugin marketplace remove --'; flags = '--json', '--scope' }
+        @{ line = 'claude plugin marketplace update --'; flags = '--json', '--help' }
+        @{ line = 'claude mcp -'; flags = '-h', '--help' }
+        @{ line = 'claude plugin marketplace -'; flags = '-h', '--help' }
     ) {
         $texts = Get-CompletionText $line
         foreach ($flag in $flags) { $texts | Should -Contain $flag }
@@ -136,6 +143,7 @@ Describe 'fixed flag values' {
         @{ line = 'claude self-hosted-runner --confine-repo-settings '; expected = 'warn', 'enforce', 'off' }
         @{ line = 'claude self-hosted-runner --trust-workspace '; expected = 'true', 'false' }
         @{ line = 'claude self-hosted-runner orchestrator --log-level '; expected = 'info', 'debug' }
+        @{ line = 'claude self-hosted-runner --server-auto-mode-lists '; expected = 'all', 'no-allow', 'none' }
         @{ line = 'claude --tmux '; expected = 'classic' }
     ) {
         Get-CompletionText $line | Should -Be $expected

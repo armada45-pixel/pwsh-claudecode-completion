@@ -135,6 +135,7 @@ function Initialize-ClaudeSpec {
         Pos 'session' -Completer BackgroundSessions -Unless '--all'
     }
     Sub 'auth' 'Manage authentication' {
+        Flag '-h','--help' 'Display help for command'
         Sub 'login' 'Sign in to your Anthropic account' {
             Flag '--claudeai' 'Use Claude subscription (default)'
             Flag '--console' 'Use Anthropic Console (API usage billing) instead of Claude subscription'
@@ -153,6 +154,7 @@ function Initialize-ClaudeSpec {
         Sub 'help' 'Display help for command' { }
     }
     Sub 'mcp' 'Configure and manage MCP servers' {
+        Flag '-h','--help' 'Display help for command'
         Sub 'serve' 'Start the Claude Code MCP server' {
             Flag '-d','--debug' 'Enable debug mode'
             Flag '-h','--help' 'Display help'
@@ -206,6 +208,7 @@ function Initialize-ClaudeSpec {
         Sub 'help' 'Display help for command' { }
     }
     Sub 'plugin','plugins' 'Manage Claude Code plugins' {
+        Flag '-h','--help' 'Display help for command'
         Sub 'configure' 'Show a plugin''s options and which are unset, or save values from stdin with --values-stdin' {
             Flag '-h','--help' 'Display help'
             Flag '--json' 'Output as JSON'
@@ -271,20 +274,24 @@ function Initialize-ClaudeSpec {
             Pos 'command-or-target' -Completer InstalledPlugins,File
         }
         Sub 'marketplace' 'Manage Claude Code marketplaces' {
+            Flag '-h','--help' 'Display help for command'
             Sub 'add' 'Add a marketplace from a URL, path, or GitHub repo' {
                 Flag '--claudeai' 'Add the marketplace of this name that claude.ai hosts for you, by its listed name or its local name'
                 Flag '-h','--help' 'Display help'
+                Flag '--json' 'Print one machine-readable result line as the last line on stdout (same exit codes)'
                 Flag '--scope' 'Where to declare the marketplace: user (default), project, or local' -Arg 'scope' -Values 'user','project','local'
                 Flag '--sparse' 'Limit checkout to specific directories via git sparse-checkout (for monorepos), e.g. --sparse .claude-plugin plugins' -Arg 'path' -Completer Directory -Repeat
                 Pos 'source' -Completer File
             }
             Sub 'remove','rm' 'Remove a configured marketplace' {
                 Flag '-h','--help' 'Display help'
+                Flag '--json' 'Print one machine-readable result line as the last line on stdout (same exit codes)'
                 Flag '--scope' 'Remove the marketplace declaration from a specific settings scope: user, project, or local. Omit to remove it from every scope' -Arg 'scope' -Values 'user','project','local'
                 Pos 'name' -Completer Marketplaces
             }
             Sub 'update' 'Update marketplace(s) from their source - updates all if no name specified' {
                 Flag '-h','--help' 'Display help'
+                Flag '--json' 'With a marketplace name: print one machine-readable result line as the last line on stdout (same exit codes)'
                 Pos 'name' -Completer Marketplaces
             }
             Sub 'list' 'List all configured marketplaces' {
@@ -453,12 +460,14 @@ function Initialize-ClaudeSpec {
         Flag '--release-idle-session-min' 'Release a session slot after N min of no user input' -Arg 'n'
         Flag '--remove-session-state' 'Remove a session''s per-session state under <base-dir>/_sessions/ when it ends on this runner. Default: false' -Arg 'bool' -Optional -Values 'true','false'
         Flag '--retire-at' 'Retire the runner at the given wall-clock time (absolute Unix timestamp, in seconds)' -Arg 'epoch-seconds'
+        Flag '--server-auto-mode-lists' 'Which of the server''s auto mode classifier lists a session may receive in its launcher settings: all, no-allow (default) or none' -Arg 'mode' -Values 'all','no-allow','none'
         Flag '--session-stop-grace-sec' 'How long to wait for the Claude process to exit cleanly after a session ends, before force-killing it. Default: 5' -Arg 'n'
         Flag '--startup-timeout-min' 'Release a session slot if the child has not completed initialization N min after spawn. Default: 15. 0 disables' -Arg 'n'
         Flag '--trust-workspace' 'Seed persisted trust for each session''s repo paths so repo-level .claude/settings.json grants are honored by the child. Default: true' -Arg 'bool' -Optional -Values 'true','false'
         Flag '--use-anthropic-git-proxy' 'Opt this runner into Anthropic-managed git. WARNING: deletes and replaces the HOME-level git config of the account running the runner'
     }
     Sub 'auto-mode' 'Inspect auto mode classifier configuration' {
+        Flag '-h','--help' 'Display help for command'
         Sub 'critique' 'Get AI feedback on your custom auto mode rules' {
             Flag '-h','--help' 'Display help'
             Flag '--model' 'Override which model is used' -Arg 'model' -Completer Models

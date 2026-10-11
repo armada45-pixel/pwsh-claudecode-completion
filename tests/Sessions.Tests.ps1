@@ -133,7 +133,7 @@ Describe 'session ids' {
         It 'handles a space and an underscore in the path, without an index' {
             $work = Join-Path $TestDrive 'my project_x' 'work'
             $dir = New-SessionFixture $config $work
-            Remove-Item (Join-Path $dir 'sessions-index.json')
+            Remove-Item -Force (Join-Path $dir 'sessions-index.json')
             Use-ClaudeEnvironment -ConfigDir $config -Cwd $work {
                 $texts = @(Get-CompletionText 'claude -r ')
                 $texts | Should -Contain 'bbbbbbbb-1111-2222-3333-bbbbbbbbbbbb'

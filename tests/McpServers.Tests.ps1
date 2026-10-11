@@ -148,7 +148,7 @@ Describe 'MCP server names' {
         @{ case = 'the files hold other JSON'; user = '[1, 2]'; project = '"text"' }
         @{ case = 'mcpServers is not an object'; user = '{ "mcpServers": 3, "projects": [] }'; project = '{ "mcpServers": null }' }
     ) {
-        Remove-Item (Join-Path $fakeHome '.claude.json'), (Join-Path $proj '.mcp.json') -ErrorAction Ignore
+        Remove-Item -Force (Join-Path $fakeHome '.claude.json'), (Join-Path $proj '.mcp.json') -ErrorAction Ignore
         if ($null -ne $user) { Set-TextFile (Join-Path $fakeHome '.claude.json') $user }
         if ($null -ne $project) { Set-TextFile (Join-Path $proj '.mcp.json') $project }
         Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
@@ -167,7 +167,7 @@ Describe 'MCP server names' {
                     'plain'                = @{ type = "st${escape}[31mdio"; command = "run`r`nme" }
                 }
             } | ConvertTo-Json -Depth 4)
-        Remove-Item (Join-Path $fakeHome '.claude.json')
+        Remove-Item -Force (Join-Path $fakeHome '.claude.json')
         Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
             $match = Get-Completion 'claude mcp get '
             $match.CompletionText | Should -Be 'plain'
@@ -191,7 +191,7 @@ Describe 'MCP server names' {
         @{ name = 'a"b'; text = "'a`"b'" }
     ) {
         Set-TextFile (Join-Path $proj '.mcp.json') (@{ mcpServers = @{ $name = @{ command = 'x' } } } | ConvertTo-Json -Depth 4)
-        Remove-Item (Join-Path $fakeHome '.claude.json')
+        Remove-Item -Force (Join-Path $fakeHome '.claude.json')
         Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
             $match = Get-Completion 'claude mcp get '
             $match.CompletionText | Should -Be $text
@@ -203,7 +203,7 @@ Describe 'MCP server names' {
 
     It 'quotes a name PowerShell would not pass on as one word' {
         Set-TextFile (Join-Path $proj '.mcp.json') '{ "mcpServers": { "my server": { "command": "x" }, "it''s": { "command": "y" } } }'
-        Remove-Item (Join-Path $fakeHome '.claude.json')
+        Remove-Item -Force (Join-Path $fakeHome '.claude.json')
         Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
             Get-CompletionText 'claude mcp get ' | Should -Be "'my server'", "'it''s'"
             (Get-Completion 'claude mcp get ')[0].ListItemText | Should -Be 'my server'

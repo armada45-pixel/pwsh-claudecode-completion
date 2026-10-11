@@ -21,7 +21,6 @@
 
 using namespace System.Collections.Generic
 
-$script:ClaudeSpec = $null
 $script:ClaudeSpecNode = $null
 
 function New-ClaudeSpecNode {
@@ -87,16 +86,14 @@ function Pos {
         })
 }
 
-# Build the tree on first use, so that importing the module stays cheap.
-function Get-ClaudeSpec {
-    if (-not $script:ClaudeSpec) {
-        $script:ClaudeSpecNode = New-ClaudeSpecNode
-        Initialize-ClaudeSpec
-        $script:ClaudeSpecNode.SubList.Sort([Comparison[object]] { param($a, $b) [string]::CompareOrdinal($a.Name, $b.Name) })
-        $script:ClaudeSpec = $script:ClaudeSpecNode
-        $script:ClaudeSpecNode = $null
-    }
-    $script:ClaudeSpec
+# The whole tree. Engine.ps1 loads this file and calls this on the first Tab.
+function New-ClaudeSpec {
+    $script:ClaudeSpecNode = New-ClaudeSpecNode
+    Initialize-ClaudeSpec
+    $root = $script:ClaudeSpecNode
+    $root.SubList.Sort([Comparison[object]] { param($a, $b) [string]::CompareOrdinal($a.Name, $b.Name) })
+    $script:ClaudeSpecNode = $null
+    $root
 }
 
 function Initialize-ClaudeSpec {

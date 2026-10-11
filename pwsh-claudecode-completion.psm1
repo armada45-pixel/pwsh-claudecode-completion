@@ -1,7 +1,6 @@
 # Tab completion for the Claude Code CLI (`claude`). Completion only: no
 # aliases, no wrapper functions.
 
-. $PSScriptRoot/src/Spec.ps1
 . $PSScriptRoot/src/Engine.ps1
 . $PSScriptRoot/src/Paths.ps1
 . $PSScriptRoot/src/Models.ps1

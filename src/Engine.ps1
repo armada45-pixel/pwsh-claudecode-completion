@@ -15,6 +15,18 @@ using namespace System.Management.Automation
 # Name, Description and, optionally, ListText.
 $script:ClaudeValueCompleters = @{}
 
+# The command tree is by far the largest file here, so it is loaded and
+# built on the first Tab rather than on import: a profile that imports the
+# module pays for it only in sessions that complete `claude`.
+$script:ClaudeSpec = $null
+function Get-ClaudeSpec {
+    if (-not $script:ClaudeSpec) {
+        . (Join-Path $PSScriptRoot 'Spec.ps1')
+        $script:ClaudeSpec = New-ClaudeSpec
+    }
+    $script:ClaudeSpec
+}
+
 # Anything read from a file is shown through this: control characters would
 # otherwise reach the terminal. Line breaks and tabs become a space, the
 # other control characters (escape, bell, ...) are dropped.

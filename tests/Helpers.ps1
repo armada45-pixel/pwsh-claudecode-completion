@@ -56,7 +56,8 @@ function Set-TextFile {
 #   -ConfigDir sets CLAUDE_CONFIG_DIR; -HomeDir sets HOME and USERPROFILE and
 #   clears CLAUDE_CONFIG_DIR unless -ConfigDir is given too.
 function Use-ClaudeEnvironment {
-    param([string]$ConfigDir, [string]$HomeDir, [string]$Cwd, [hashtable]$Environment = @{}, [Parameter(Mandatory)][scriptblock]$Body)
+    [CmdletBinding(PositionalBinding = $false)]
+    param([string]$ConfigDir, [string]$HomeDir, [string]$Cwd, [hashtable]$Environment = @{}, [Parameter(Mandatory, Position = 0)][scriptblock]$Body)
     $names = @('CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_PLUGIN_CACHE_DIR', 'CLAUDE_COMPLETION_SESSION_LIMIT', 'HOME', 'USERPROFILE') + @($Environment.Keys)
     $saved = @{}
     foreach ($name in $names) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }

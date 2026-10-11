@@ -6,6 +6,7 @@
 . $PSScriptRoot/src/Paths.ps1
 . $PSScriptRoot/src/Models.ps1
 . $PSScriptRoot/src/Sessions.ps1
+. $PSScriptRoot/src/BackgroundSessions.ps1
 
 # `claude` covers the native build; the other names cover an npm install and
 # a command typed with its extension.

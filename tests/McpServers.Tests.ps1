@@ -171,7 +171,7 @@ Describe 'MCP server names' {
         Use-ClaudeEnvironment -HomeDir $fakeHome -Cwd $proj {
             $match = Get-Completion 'claude mcp get '
             $match.CompletionText | Should -Be 'plain'
-            $match.ToolTip | Should -Be 'project - st [31mdio run me'
+            $match.ToolTip | Should -Be 'project - st[31mdio run me'
         }
     }
 

@@ -16,11 +16,13 @@ using namespace System.Management.Automation
 $script:ClaudeValueCompleters = @{}
 
 # Anything read from a file is shown through this: control characters would
-# otherwise reach the terminal.
+# otherwise reach the terminal. Line breaks and tabs become a space, the
+# other control characters (escape, bell, ...) are dropped.
 function ConvertTo-ClaudeDisplayText {
     param([string]$Text)
     if (-not $Text) { return '' }
-    [regex]::Replace($Text, '[\p{Cc}  ]+', ' ').Trim()
+    $Text = [regex]::Replace($Text, '[\t\n\v\f\r\x85\p{Zl}\p{Zp}]+', ' ')
+    [regex]::Replace($Text, '\p{Cc}', '').Trim()
 }
 
 # Quote a value when PowerShell would not pass it on as one literal word.
@@ -36,7 +38,7 @@ function New-ClaudeResult {
         [CompletionResultType]$Type = [CompletionResultType]::ParameterValue,
         [string]$Prefix = ''
     )
-    if (-not $Text -or $Text -match '[\p{Cc}  ]') { return }
+    if (-not $Text -or $Text -match '[\p{Cc}\p{Zl}\p{Zp}]') { return }
     $list = ConvertTo-ClaudeDisplayText $ListText
     if (-not $list) { $list = $Text }
     $tip = ConvertTo-ClaudeDisplayText $ToolTip

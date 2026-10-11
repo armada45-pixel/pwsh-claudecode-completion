@@ -7,6 +7,10 @@
 
 Import-Module (Join-Path $PSScriptRoot '..' 'pwsh-claudecode-completion.psd1') -Force
 
+# Most tests look at names and tooltips separately. The one-line
+# "name  -- description" layout has its own tests in ListLayout.Tests.ps1.
+$env:CLAUDE_COMPLETION_DESCRIPTIONS = 'tooltip'
+
 # The matches for a command line. The cursor is at the end unless -Cursor is given.
 function Get-Completion {
     param([Parameter(Mandatory)][string]$Line, [int]$Cursor = -1)

@@ -28,7 +28,18 @@ claude --add-dir <Tab>                # directories
 claude --settings <Tab>               # files
 ```
 
-Every result carries its description as the tooltip, so `MenuComplete` shows it under the menu.
+With `MenuComplete`, a list that fits the window is shown the way zsh shows it, one item per line with its description:
+
+```
+> claude mcp <Tab>
+add                      -- Add an MCP server to Claude Code
+add-from-claude-desktop  -- Import MCP servers from Claude Desktop (Mac and WSL only)
+add-json                 -- Add an MCP server (stdio, SSE, HTTP, or WebSocket) with a JSON string
+get                      -- Get details about an MCP server
+...
+```
+
+A list too long for the window (`claude --<Tab>`) stays a grid of names, because PSReadLine does not page its menu. Every result also carries its description as the tooltip, shown under the menu for the selected item.
 
 ## Install
 
@@ -94,6 +105,7 @@ They are read from Claude's own files. Completion never runs `claude` and never 
 | `CLAUDE_CONFIG_DIR` | Used instead of `~/.claude`. `.claude.json` is then read from inside it. |
 | `CLAUDE_CODE_PLUGIN_CACHE_DIR` | Used instead of `<config>/plugins`. |
 | `CLAUDE_COMPLETION_SESSION_LIMIT` | How many sessions `--resume` offers. Default 20; 0 or less means no limit. |
+| `CLAUDE_COMPLETION_DESCRIPTIONS` | Set to `tooltip` to list plain names only; descriptions are then shown just as the tooltip. |
 
 ### Sessions
 
@@ -118,7 +130,8 @@ The title is the `/rename` title, else the generated title, else the first user 
 - A value PowerShell would not pass on as one word is quoted: `'sonnet[1m]'`.
 - In a comma-separated list (`--setting-sources`, `--fallback-model`) the comma is not added for you. Type it and press Tab again for the remaining values.
 - Where a position takes free text (a prompt, a new server name) and the word is still empty, the flags of the command are listed.
-- When there is no match at all, for example `--resume` in a directory without sessions, PowerShell falls back to file names. A completer cannot turn that off.
+- An optional value with nothing to offer, such as `--resume` in a directory without sessions, goes on to the commands and flags that can follow.
+- When there is no match at all for a required value, PowerShell falls back to file names. A completer cannot turn that off.
 - Sessions follow `CLAUDE_CONFIG_DIR`. The zsh plugin always reads them from `~/.claude`.
 - `--resume`, `--debug`, `--from-pr` and `--prompt-suggestions` take an optional value, as `claude --help` says. So `claude --debug mcp <Tab>` completes the `mcp` subcommands.
 - A few flags from `claude --help` 2.1.296 that `_claude` does not have: `--json` for `plugin marketplace add|remove|update`, and `--help` on the command groups.

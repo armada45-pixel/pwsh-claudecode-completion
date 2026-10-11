@@ -58,6 +58,39 @@ function New-ClaudeResult {
     [CompletionResult]::new($Prefix + (ConvertTo-ClaudeArgument $Text), $list, $Type, $tip)
 }
 
+# Lay a short list of results out the way zsh does: one per line, the name
+# followed by its description. PSReadLine's menu shows the list text, and a
+# list text as wide as this makes it a single column.
+#   CLAUDE_COMPLETION_DESCRIPTIONS=tooltip keeps the plain names; the
+#   description is then only the tooltip under the menu.
+# A list too long for the window stays a grid of names: PSReadLine does not
+# page a menu, it scrolls the prompt away.
+function Format-ClaudeResultList {
+    param([object[]]$Results)
+    if ($Results.Count -lt 2 -or $env:CLAUDE_COMPLETION_DESCRIPTIONS -eq 'tooltip') { return $Results }
+    $width = 120
+    $height = 40
+    try {
+        if ([Console]::WindowWidth -gt 20) { $width = [Console]::WindowWidth }
+        if ([Console]::WindowHeight -gt 5) { $height = [Console]::WindowHeight }
+    }
+    catch { }
+    if ($Results.Count -gt $height - 4) { return $Results }
+
+    # Results that already show more than a name (sessions), and file names, stay as they are.
+    $plain = { param($r) $r.ResultType -in [CompletionResultType]::ParameterValue, [CompletionResultType]::ParameterName -and $r.ToolTip -cne $r.ListItemText -and -not $r.ListItemText.Contains([char]' ') }
+    $pad = 0
+    foreach ($result in $Results) { if ((& $plain $result) -and $result.ListItemText.Length -gt $pad) { $pad = $result.ListItemText.Length } }
+    if (-not $pad) { return $Results }
+
+    foreach ($result in $Results) {
+        if (-not (& $plain $result)) { $result; continue }
+        $line = $result.ListItemText.PadRight($pad) + '  -- ' + $result.ToolTip
+        if ($line.Length -gt $width - 2) { $line = $line.Substring(0, $width - 5) + '...' }
+        [CompletionResult]::new($result.CompletionText, $line, $result.ResultType, $result.ToolTip)
+    }
+}
+
 function Get-ClaudePathResult {
     param([string]$Current, [switch]$DirectoryOnly)
     foreach ($result in [CompletionCompleters]::CompleteFilename($Current)) {
@@ -91,7 +124,7 @@ function Get-ClaudeValueResult {
 
     foreach ($value in $Spec.Values) {
         if ($value -in $used -or -not $value.StartsWith($Current, [StringComparison]::OrdinalIgnoreCase)) { continue }
-        New-ClaudeResult -Text $value -ToolTip "<$($Spec.Arg)> $value" -Prefix $Prefix
+        New-ClaudeResult -Text $value -Prefix $Prefix
     }
 
     foreach ($name in $Spec.Completer) {
@@ -234,8 +267,11 @@ function Get-ClaudeCompletion {
             return Get-ClaudeValueResult -Spec $pending -Current $current -Typed $typed -Context $context
         }
         elseif (-not $isOption) {
+            # The value may be left out. With nothing to offer for it (no
+            # sessions here, say), go on to what can follow instead of
+            # leaving PowerShell to offer file names.
             $values = @(Get-ClaudeValueResult -Spec $pending -Current $current -Typed $typed -Context $context)
-            if ($values.Count -or $pending.Values -or $pending.Completer) { return $values }
+            if ($values.Count) { return $values }
         }
     }
 

@@ -19,7 +19,7 @@ Register-ArgumentCompleter -Native -CommandName claude, claude.exe, claude.cmd, 
     $errorCount = $global:Error.Count
     try {
         $ErrorActionPreference = 'Stop'
-        Get-ClaudeCompletion -WordToComplete $wordToComplete -CommandAst $commandAst -CursorPosition $cursorPosition
+        Format-ClaudeResultList @(Get-ClaudeCompletion -WordToComplete $wordToComplete -CommandAst $commandAst -CursorPosition $cursorPosition)
     }
     catch { }
     finally {

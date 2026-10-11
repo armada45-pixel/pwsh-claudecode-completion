@@ -1,0 +1,53 @@
+name: test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pester:
+    name: Pester on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show versions
+        run: |
+          $PSVersionTable | Out-String
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Out-String
+
+      - name: Install Pester
+        run: |
+          if (-not (Get-Module -ListAvailable Pester | Where-Object Version -GE '5.5.0')) {
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module Pester -MinimumVersion 5.5.0 -Scope CurrentUser -Force
+          }
+
+      - name: Run tests
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'testResults.xml'
+          Invoke-Pester -Configuration $config
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: testResults.xml
+          if-no-files-found: ignore

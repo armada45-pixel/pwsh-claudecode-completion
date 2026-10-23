@@ -232,6 +232,7 @@ function Initialize-ClaudeSpec {
         Sub 'validate' 'Validate a plugin or marketplace manifest, or the skills, agents, and commands in a directory' {
             Flag '-h','--help' 'Display help'
             Flag '--json' 'Output the validation report as JSON (same exit codes)'
+            Flag '--profile' 'Also exit 1 when the plugin directory (the catalog that plugins are submitted to) would refuse a submission of the plugin on a check this command runs' -Arg 'name' -Values 'directory'
             Flag '--strict' 'Treat warnings as errors (exit 1). Use in CI to fail on unrecognized fields, missing metadata, and other issues that the runtime tolerates'
             Pos 'path' -Completer File
         }
@@ -248,6 +249,7 @@ function Initialize-ClaudeSpec {
             Flag '--allow-real-servers' 'With --mocks record: also start the plugin''s real MCP server processes for servers with no mock (runs as you, outside the OS sandbox that confines shell tools; use only on plugins you trust)'
             Flag '--allow-tools' 'Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax' -Arg 'tools' -Repeat -Variadic
             Flag '--case' 'Filter cases by name glob' -Arg 'glob'
+            Flag '--disallow-tools' 'Built-in tools to keep from Claude in every case, even if granted (e.g. Agent TaskStop)' -Arg 'tools' -Repeat -Variadic
             Flag '-j','--concurrency' 'Run up to n agent runs at once (1-8; default 1); each is a full claude child on your own credential sharing one rate limit, results keep case order' -Arg 'n'
             Flag '--eval-dir' 'Directory name (below the plugin) that holds the eval cases; results go to <plugin>/<dir>/results/ (default: the manifest''s experimental.evals value, else evals/)' -Arg 'dir' -Completer Directory
             Flag '-h','--help' 'Display help'
@@ -370,6 +372,7 @@ function Initialize-ClaudeSpec {
             Flag '-y','--yes' 'Skip confirmation prompt'
             Pos 'path' -Completer Directory
         }
+        Flag '-h','--help' 'Display help for command'
         Sub 'help' 'Display help for command' { }
     }
     Sub 'purge' 'Delete all Claude Code state for a project (transcripts, tasks, file history, config entry)' {
@@ -381,6 +384,9 @@ function Initialize-ClaudeSpec {
         Pos 'path' -Completer Directory
     }
     Sub 'daemon' 'Manage the background session supervisor' {
+        Flag '-h','--help' 'Show this help'
+        Flag '--json-path' 'Config file (default: ~/.claude/daemon.json)' -Arg 'path' -Completer File
+        Flag '--log-file' 'Log file (default: ~/.claude/daemon.log)' -Arg 'path' -Completer File
         Sub 'run' 'Run the supervisor in the foreground (default when piped)' {
             Flag '-h','--help' 'Display help'
             Flag '--json-path' 'Config file (default: ~/.claude/daemon.json)' -Arg 'path' -Completer File
@@ -404,6 +410,7 @@ function Initialize-ClaudeSpec {
         # setup, doctor and orchestrator are only recognized as the first word;
         # with anything else there (or nothing), the options belong to the runner.
         Sub 'orchestrator' 'Poll the spawn-hints queue and run the spawn-runner hook once per hint' {
+            Flag '--agent-proxy-url' 'Agent proxy for the runners the spawn-runner hook starts (passed to the hook as SELF_HOSTED_RUNNER_AGENT_PROXY_URL)' -Arg 'url'
             Flag '--api-url' 'API base URL (default: https://api.anthropic.com)' -Arg 'url'
             Flag '--debug-dir' 'DEV ONLY — writes each work-order JWT + decoded JSON + hook stderr to <dir>/<jti>.{jwt,json,stderr}' -Arg 'path' -Completer Directory
             Flag '--environment-secret-file' 'Path to environment secret file (or set SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET)' -Arg 'path' -Completer File
@@ -420,20 +427,24 @@ function Initialize-ClaudeSpec {
             Flag '--scm-connector-host-rewrite' 'e2e only — redirect the TCP connect while keeping Host/SNI as --scm-connector-host' -Arg 'from=to_host:to_port'
             Flag '--scm-connector-id' 'ghe_configurations.id for this org (REQUIRED with --scm-connector-host)' -Arg 'n'
             Flag '--scm-connector-provider' 'Provider slug (default: ghe)' -Arg 'provider'
+            Flag '--shutdown-drain-sec' 'On SIGTERM, stop polling but give the poll in flight and the running hooks up to <n> seconds to end (default: 0)' -Arg 'n'
         }
         Sub 'setup','doctor' 'Interactive wizard: walks you from zero to a working self-hosted runner environment','Interactive wizard: diagnoses a self-hosted runner deployment' {
             Flag '-h','--help' 'Show this help message'
             # Extra args are passed to the underlying Claude Code session.
             Pos 'args' -Rest
         }
+        Flag '--agent-proxy-url' 'Route every session this runner runs through the agent proxy at <url> (https:// only)' -Arg 'url'
         Flag '--api-url' 'API base URL (default: https://api.anthropic.com)' -Arg 'url'
         Flag '--base-dir' 'Base directory for repo checkouts (default: /workspace; required on Windows, which has no default)' -Arg 'path' -Completer Directory
         Flag '--capacity' 'Max concurrent sessions (default: 1)' -Arg 'n'
+        Flag '--checkout-hook-timeout-min' 'Wall-clock budget for each run of the checkout lifecycle hook. Default: 30. 0 disables' -Arg 'n'
         Flag '--client-label' 'Observability label sent at registration (default: hostname)' -Arg 'label'
         Flag '--configure-git' 'Set global git identity to Claude <noreply@anthropic.com> and enable commit signing via Anthropic''s signing service, matching 1P sessions'
         Flag '--confine-repo-settings' 'Repo-committed-settings confine guard mode: warn (default), enforce or off' -Arg 'mode' -Values 'warn','enforce','off'
         Flag '--debug-token-dir' 'DEBUG ONLY — writes live tokens to disk. Do not use in production' -Arg 'path' -Completer Directory
         Flag '--defer-shutdown-max-min' 'On the first SIGTERM/SIGINT, stop taking new work and finish shutting down M minutes later instead of draining' -Arg 'm'
+        Flag '--diff-finds-nested-repository' 'Let the web session''s Changes pane show a repository cloned into a sub-folder of a no-repository session''s working folder (requires --capacity 1). Default: false' -Arg 'bool' -Optional -Values 'true','false'
         Flag '--drain-grace-sec' 'Keep the runner warm and re-poll the locked account''s queue for that many seconds before exiting (default: 0)' -Arg 'n'
         Flag '--drain-marker-file' 'Marker file a host writes to announce a graceful drain before sending SIGTERM (telemetry only)' -Arg 'path' -Completer File
         Flag '--drain-wait-sec' 'On SIGTERM/SIGINT, wait up to N seconds for each session''s in-flight turn and running background tasks to finish' -Arg 'n'
@@ -519,6 +530,7 @@ function Initialize-ClaudeSpec {
         Flag '--no-post' 'Do not post the findings to the PR (the default; accepted for parity with the /ultrareview and /code-review ultra flags)' -Excludes '--post'
         Flag '--post' 'Post the finished review''s findings to the PR as you (PR targets only; one plain comment, not a review)' -Excludes '--no-post'
         Flag '--timeout' 'Maximum minutes to wait for the review to finish (default: 45)' -Arg 'minutes'
+        Flag '--trust-workspace' 'Trust the current folder for this run only, without asking (for scripts and CI)'
         Pos 'target'
     }
     Sub 'setup-token','doctor','update','upgrade' 'Set up a long-lived authentication token (requires Claude subscription)','Check the health of your Claude Code installation','Check for updates and install if available','Check for updates and install if available' {

@@ -110,6 +110,14 @@ Describe 'other commands' {
         @{ line = 'claude plugin marketplace update --'; flags = '--json', '--help' }
         @{ line = 'claude mcp -'; flags = '-h', '--help' }
         @{ line = 'claude plugin marketplace -'; flags = '-h', '--help' }
+        # New in 2.1.309.
+        @{ line = 'claude plugin validate --'; flags = '--profile' }
+        @{ line = 'claude plugin eval --d'; flags = '--disallow-tools' }
+        @{ line = 'claude daemon --'; flags = '--help', '--json-path', '--log-file' }
+        @{ line = 'claude project -'; flags = '-h', '--help' }
+        @{ line = 'claude self-hosted-runner --'; flags = '--agent-proxy-url', '--checkout-hook-timeout-min', '--diff-finds-nested-repository' }
+        @{ line = 'claude self-hosted-runner orchestrator --'; flags = '--agent-proxy-url', '--shutdown-drain-sec' }
+        @{ line = 'claude ultrareview --'; flags = '--trust-workspace', '--post', '--timeout' }
     ) {
         $texts = Get-CompletionText $line
         foreach ($flag in $flags) { $texts | Should -Contain $flag }
@@ -145,6 +153,8 @@ Describe 'fixed flag values' {
         @{ line = 'claude self-hosted-runner orchestrator --log-level '; expected = 'info', 'debug' }
         @{ line = 'claude self-hosted-runner --server-auto-mode-lists '; expected = 'all', 'no-allow', 'none' }
         @{ line = 'claude --tmux '; expected = 'classic' }
+        @{ line = 'claude plugin validate --profile '; expected = 'directory' }
+        @{ line = 'claude self-hosted-runner --diff-finds-nested-repository '; expected = 'true', 'false' }
     ) {
         Get-CompletionText $line | Should -Be $expected
     }

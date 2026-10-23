@@ -4,7 +4,7 @@ Tab completion for the [Claude Code](https://github.com/anthropics/claude-code) 
 
 It is a native PowerShell port of [zsh-claudecode-completion](https://github.com/wbingli/zsh-claudecode-completion): the same commands, flags and values, and the same rules. Completion only: no aliases, no wrapper functions, no workflow.
 
-Matches Claude Code **2.1.296** (see [`claude-version`](claude-version)).
+Matches Claude Code **2.1.309** (see [`claude-version`](claude-version)).
 
 ## What it completes
 
@@ -134,7 +134,7 @@ The title is the `/rename` title, else the generated title, else the first user 
 - When there is no match at all for a required value, PowerShell falls back to file names. A completer cannot turn that off.
 - Sessions follow `CLAUDE_CONFIG_DIR`. The zsh plugin always reads them from `~/.claude`.
 - `--resume`, `--debug`, `--from-pr` and `--prompt-suggestions` take an optional value, as `claude --help` says. So `claude --debug mcp <Tab>` completes the `mcp` subcommands.
-- A few flags from `claude --help` 2.1.296 that `_claude` does not have: `--json` for `plugin marketplace add|remove|update`, and `--help` on the command groups.
+- A few flags from `claude --help` 2.1.309 that `_claude` does not have: `--json` for `plugin marketplace add|remove|update`, and `--help` on the command groups.
 
 ## Development
 
